@@ -7,15 +7,24 @@ import { createClient } from '@/lib/supabase/server'
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
+  const emailRaw = formData.get('email') as string
+  const passwordRaw = formData.get('password') as string
+
+  if (!emailRaw || !passwordRaw) {
+    redirect('/login?error=Veuillez remplir tous les champs')
+  }
+
   const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email: emailRaw.trim(),
+    password: passwordRaw,
   }
 
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect('/login?error=Invalid credentials')
+    let msg = error.message
+    if (msg.includes("Invalid login credentials")) msg = "Identifiants incorrects"
+    redirect(`/login?error=${encodeURIComponent(msg)}`)
   }
 
   revalidatePath('/', 'layout')
@@ -25,12 +34,21 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
-  const name = formData.get('name') as string
-  const email = formData.get('email') as string
+  const name = (formData.get('name') as string)?.trim()
+  const email = (formData.get('email') as string)?.trim()
   const password = formData.get('password') as string
 
   if (!name || !email || !password) {
     redirect('/login?view=signup&error=Veuillez remplir tous les champs')
+  }
+
+  // Basic regex check before hitting Supabase just in case
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    redirect('/login?view=signup&error=Adresse email invalide (vérifiez les espaces)')
+  }
+
+  if (password.length < 6) {
+    redirect('/login?view=signup&error=Le mot de passe doit faire au moins 6 caractères')
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -41,8 +59,15 @@ export async function signup(formData: FormData) {
     }
   })
 
+  // Traduire les erreurs courantes de Supabase
   if (error) {
-    redirect(`/login?view=signup&error=${error.message}`)
+    let msg = error.message
+    if (msg.toLowerCase().includes("invalid format") || msg.toLowerCase().includes("unable to validate email")) {
+      msg = "L'adresse email n'est pas valide."
+    } else if (msg.toLowerCase().includes("already registered")) {
+      msg = "Un compte utilise déjà cette adresse email."
+    }
+    redirect(`/login?view=signup&error=${encodeURIComponent(msg)}`)
   }
 
   if (data.user) {
