@@ -21,11 +21,15 @@ export async function createLaundryMachine(formData?: FormData) {
   const machineNumber = (count || 0) + 1;
   const title = `Machine n°${machineNumber}`
   
-  await supabase.from('laundry_machines').insert({
+  const { error } = await supabase.from('laundry_machines').insert({
     household_id: profile.household_id,
     title,
     status: 'dirty'
   })
+  
+  if (error) {
+    console.error("Action createLaundryMachine Erreur SQL:", error.message)
+  }
   
   revalidatePath('/laundry')
 }
@@ -34,13 +38,15 @@ export async function updateLaundryStatus(id: string, status: string) {
   const supabase = await createClient()
   
   if (status === 'done') {
-    await supabase.from('laundry_machines').delete().eq('id', id)
+    const { error } = await supabase.from('laundry_machines').delete().eq('id', id)
+    if (error) console.error("Action delete Erreur SQL:", error.message)
   } else {
     // update state and timestamp
-    await supabase.from('laundry_machines').update({ 
+    const { error } = await supabase.from('laundry_machines').update({ 
       status, 
       updated_at: new Date().toISOString() 
     }).eq('id', id)
+    if (error) console.error("Action update Erreur SQL:", error.message)
   }
   
   revalidatePath('/laundry')

@@ -132,8 +132,8 @@ export default async function DashboardPage() {
               <CalendarDays className="h-10 w-10 text-zinc-400" />
             </div>
             <h2 className="text-2xl font-bold text-zinc-900">Aucune tâche active</h2>
-            <p className="mt-4 max-w-sm leading-relaxed text-zinc-500">Ajoutez des tâches depuis la page de configuration pour voir votre planning se remplir.</p>
-            <Link href="/config" className="mt-8 inline-flex items-center justify-center rounded-2xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-zinc-800 active:scale-95">
+            <p className="mt-4 max-w-sm leading-relaxed text-zinc-500">Ajoutez des tâches pour voir votre planning se remplir.</p>
+            <Link href="/add" className="mt-8 inline-flex items-center justify-center rounded-2xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-zinc-800 active:scale-95">
               Ajouter une tâche
             </Link>
           </div>
