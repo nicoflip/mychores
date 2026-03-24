@@ -32,7 +32,7 @@ export default async function DashboardPage() {
           <p className="mt-4 leading-relaxed text-zinc-500">
             Pour commencer à gérer vos tâches, vous devez d'abord configurer ou rejoindre un foyer.
           </p>
-          <Link href="/config" className="relative mt-8 inline-flex w-full items-center justify-center overflow-hidden rounded-2xl bg-blue-600 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-blue-500 active:scale-95 sm:w-auto">
+          <Link href="/setup" className="relative mt-8 inline-flex w-full items-center justify-center overflow-hidden rounded-2xl bg-blue-600 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-blue-500 active:scale-95 sm:w-auto">
             Configurer mon foyer
           </Link>
         </main>

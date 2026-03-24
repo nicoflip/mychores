@@ -39,7 +39,7 @@ export async function createHousehold(formData: FormData) {
   if (profileError) return { error: profileError.message }
 
   revalidatePath('/dashboard')
-  revalidatePath('/config')
+  revalidatePath('/setup')
   return { success: true }
 }
 
@@ -62,6 +62,6 @@ export async function joinHousehold(formData: FormData) {
   if (profileError) return { error: profileError.message }
 
   revalidatePath('/dashboard')
-  revalidatePath('/config')
+  revalidatePath('/setup')
   return { success: true }
 }

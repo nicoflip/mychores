@@ -35,7 +35,9 @@ export async function signup(formData: FormData) {
   const supabase = await createClient()
 
   const name = (formData.get('name') as string)?.trim()
-  const email = (formData.get('email') as string)?.trim()
+  const emailRaw = formData.get('email') as string
+  // Remove hidden chars, spaces, and make lowercase
+  const email = emailRaw?.replace(/[\s\u200B-\u200D\uFEFF]/g, '')?.toLowerCase()
   const password = formData.get('password') as string
 
   if (!name || !email || !password) {
@@ -62,8 +64,8 @@ export async function signup(formData: FormData) {
   // Traduire les erreurs courantes de Supabase
   if (error) {
     let msg = error.message
-    if (msg.toLowerCase().includes("invalid format") || msg.toLowerCase().includes("unable to validate email")) {
-      msg = "L'adresse email n'est pas valide."
+    if (msg.toLowerCase().includes("invalid format") || msg.toLowerCase().includes("unable to validate email") || msg.toLowerCase().includes("invalid")) {
+      msg = "L'adresse email n'a pas un format valide."
     } else if (msg.toLowerCase().includes("already registered")) {
       msg = "Un compte utilise déjà cette adresse email."
     }
