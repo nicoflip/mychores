@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Home, ShoppingCart, Shirt, PlusCircle, Settings2 } from 'lucide-react'
+import { Home, ShoppingCart, Shirt, PlusCircle, Settings2, PawPrint } from 'lucide-react'
 
 export async function Nav() {
   const supabase = await createClient()
@@ -28,6 +28,9 @@ export async function Nav() {
               </Link>
               <Link href="/laundry" className="group flex items-center gap-2 text-sm font-bold text-zinc-600 transition-colors hover:text-blue-600">
                 <Shirt className="h-4 w-4 transition-transform group-hover:scale-110" /> Linge
+              </Link>
+              <Link href="/pets" className="group flex items-center gap-2 text-sm font-bold text-zinc-600 transition-colors hover:text-rose-500">
+                <PawPrint className="h-4 w-4 transition-transform group-hover:scale-110" /> Animaux
               </Link>
               <div className="w-px h-6 bg-zinc-200/80 mx-2" />
               <Link href="/add" className="group flex items-center gap-2 text-sm font-bold text-zinc-600 transition-colors hover:text-blue-600">
@@ -63,9 +66,9 @@ export async function Nav() {
              </div>
              <span className="text-[10px] font-black tracking-widest uppercase text-blue-600 drop-shadow-sm">Nouveau</span>
            </Link>
-           <Link href="/laundry" className="flex flex-col items-center gap-1 p-2 text-zinc-400 hover:text-blue-600 active:text-blue-600 transition-colors">
-             <Shirt className="h-6 w-6 stroke-[2.5]" />
-             <span className="text-[9px] font-black tracking-widest uppercase">Linge</span>
+           <Link href="/pets" className="flex flex-col items-center gap-1 p-2 text-zinc-400 hover:text-rose-500 active:text-rose-500 transition-colors">
+             <PawPrint className="h-6 w-6 stroke-[2.5]" />
+             <span className="text-[9px] font-black tracking-widest uppercase">Animaux</span>
            </Link>
            <Link href="/manage" className="flex flex-col items-center gap-1 p-2 text-zinc-400 hover:text-blue-600 active:text-blue-600 transition-colors">
              <Settings2 className="h-6 w-6 stroke-[2.5]" />
