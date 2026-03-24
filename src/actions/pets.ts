@@ -34,6 +34,18 @@ export async function deletePet(petId: string) {
   revalidatePath('/pets')
 }
 
+export async function updatePet(formData: FormData) {
+  const supabase = await createClient()
+  const id = formData.get('pet_id') as string
+  const name = formData.get('name') as string
+  const emoji = (formData.get('emoji') as string) || 'tabby-brown'
+  const birthday = formData.get('birthday') as string || null
+  if (!id || !name) return
+  const { error } = await supabase.from('pets').update({ name, emoji, birthday }).eq('id', id)
+  if (error) console.error('updatePet error:', error.message)
+  revalidatePath('/pets')
+}
+
 export async function createTreatment(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
