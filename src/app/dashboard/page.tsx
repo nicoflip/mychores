@@ -3,9 +3,9 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { markChoreDone } from '@/actions/chores'
 import { Nav } from '@/components/Nav'
-import { formatDistanceToNow, addDays, startOfDay, differenceInDays, isToday, isTomorrow, format } from 'date-fns'
+import { formatDistanceToNow, addDays, startOfDay, differenceInDays, isToday, isTomorrow, format, nextDay, Day, getDay } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { CheckCircle2, AlertCircle, Sparkles, CalendarDays, Flame, Calendar as CalendarIcon } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Sparkles, CalendarDays, Flame, Calendar as CalendarIcon, Trash2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,6 +51,36 @@ export default async function DashboardPage() {
       )
     `)
     .eq('household_id', profile.household_id)
+
+  const { data: trashSchedulesRaw } = await supabase
+    .from('trash_schedules')
+    .select('*')
+    .eq('household_id', profile.household_id)
+    .order('day_of_week', { ascending: true })
+
+  const trashSchedules = trashSchedulesRaw || []
+
+  // Calculate next collection date for each schedule
+  const TRASH_COLOR_MAP: Record<string, string> = {
+    zinc: 'bg-zinc-600',
+    yellow: 'bg-yellow-400',
+    green: 'bg-emerald-500',
+    blue: 'bg-blue-500',
+    brown: 'bg-amber-800',
+  }
+
+  const today = startOfDay(new Date())
+  const todayDow = getDay(today)
+
+  const trashWithNext = trashSchedules.map((s: any) => {
+    let daysUntil = (s.day_of_week - todayDow + 7) % 7
+    if (daysUntil === 0) daysUntil = 0 // today
+    const nextDate = addDays(today, daysUntil)
+    const isNextToday = daysUntil === 0
+    const isNextTomorrow = daysUntil === 1
+    const label = isNextToday ? "Aujourd'hui" : isNextTomorrow ? 'Demain' : format(nextDate, 'EEEE d MMM', { locale: fr })
+    return { ...s, daysUntil, label, isNextToday, isNextTomorrow }
+  }).sort((a: any, b: any) => a.daysUntil - b.daysUntil)
 
   const now = startOfDay(new Date())
 
@@ -126,6 +156,39 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        {/* Trash Collection Widget */}
+        {trashWithNext.length > 0 && (
+          <section className="mb-10 fade-in-up stagger-1">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600 shadow-inner">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <h2 className="text-xl font-bold text-zinc-900">Passages des poubelles</h2>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {trashWithNext.map((s: any) => (
+                <div key={s.id} className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
+                  s.isNextToday ? 'border-zinc-300 bg-zinc-800 text-white' :
+                  s.isNextTomorrow ? 'border-zinc-200 bg-zinc-100 text-zinc-800' :
+                  'border-zinc-100 bg-white/70 text-zinc-600'
+                } shadow-sm`}>
+                  <span className={`h-3 w-3 rounded-full shrink-0 ${TRASH_COLOR_MAP[s.color] || 'bg-zinc-500'}`} />
+                  <div>
+                    <div className={`text-sm font-bold ${
+                      s.isNextToday ? 'text-white' : 'text-zinc-800'
+                    }`}>{s.label}</div>
+                    <div className={`text-xs font-medium ${
+                      s.isNextToday ? 'text-zinc-300' : 'text-zinc-400'
+                    }`}>{s.label_name || s.label}</div>
+                  </div>
+                  {s.isNextToday && (
+                    <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white">Ce soir !</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
         {processedChores.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-zinc-300 bg-zinc-50/50 px-6 py-20 text-center">
             <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-zinc-200">

@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { createChore } from '@/actions/chores'
+import { createTrashSchedule, deleteTrashSchedule } from '@/actions/trash'
 import { Nav } from '@/components/Nav'
-import { Plus, Sparkles, Wand2 } from 'lucide-react'
+import { Plus, Sparkles, Wand2, Trash2, Trash, CalendarClock } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,9 +12,20 @@ const PREDEFINED_CHORES = [
   { title: "Linge", description: "Lancer une machine de lessive, étendre ou plier", frequency_days: 4, icon: "🧺" },
   { title: "Nettoyer SDB", description: "Laver les toilettes, la douche et le lavabo", frequency_days: 7, icon: "🛁" },
   { title: "Litière chat", description: "Vider, nettoyer et changer la litière", frequency_days: 7, icon: "🐈" },
+  { title: "Sortir les poubelles", description: "Descendre les bacs avant le passage du camion", frequency_days: 7, icon: "🗑️" },
   { title: "Changer Draps", description: "Laver et remplacer le linge de lit", frequency_days: 14, icon: "🛏️" },
   { title: "Poussières", description: "Dépoussiérer les meubles et étagères", frequency_days: 14, icon: "🧽" },
-  { title: "Grand ménage frigo", description: "Jeter les périmés et laver les surfaces", frequency_days: 30, icon: "❄️" }
+  { title: "Grand ménage frigo", description: "Jeter les périmés et laver les surfaces", frequency_days: 30, icon: "❄️" },
+]
+
+const DAYS_FR = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+
+const TRASH_COLORS = [
+  { key: 'zinc',    label: 'Gris — Ordures ménagères',  dot: 'bg-zinc-700' },
+  { key: 'yellow',  label: 'Jaune — Recyclage',         dot: 'bg-yellow-400' },
+  { key: 'green',   label: 'Vert — Verre / Compost',   dot: 'bg-emerald-500' },
+  { key: 'blue',    label: 'Bleu — Cartons / Papiers', dot: 'bg-blue-500' },
+  { key: 'brown',   label: 'Marron — Biodéchets',      dot: 'bg-amber-800' },
 ]
 
 export default async function AddChorePage() {
@@ -24,27 +36,144 @@ export default async function AddChorePage() {
   const { data: profile } = await supabase.from('profiles').select('household_id').eq('id', user.id).single()
   if (!profile?.household_id) redirect('/dashboard')
 
+  // Fetch existing trash schedules
+  const { data: trashSchedules } = await supabase
+    .from('trash_schedules')
+    .select('*')
+    .eq('household_id', profile.household_id)
+    .order('created_at', { ascending: true })
+
+  const schedules = trashSchedules || []
+
   return (
     <div className="min-h-[100dvh] pb-32 md:pb-12 relative">
       <Nav />
-      <main className="mx-auto mt-8 max-w-4xl px-4 md:mt-32 md:px-8 relative z-10">
+      <main className="mx-auto mt-8 max-w-5xl px-4 md:mt-32 md:px-8 relative z-10">
         
-        {/* Header Section */}
+        {/* Header */}
         <div className="relative mb-8 overflow-hidden rounded-[2rem] glass-card p-6 md:p-10 fade-in-up stagger-1">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-50 blur-3xl opacity-60 flex" />
-          <div className="relative z-10 flex flex-col justify-between md:flex-row md:items-end gap-6">
-            <div>
-              <p className="mb-2 text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2"><Wand2 className="h-4 w-4"/> Catalogue des tâches</p>
-              <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 md:text-5xl">Ajouter une tâche</h1>
-              <p className="mt-2 text-zinc-500 font-medium">Créez de nouvelles tâches pour enrichir l'emploi du temps de votre foyer.</p>
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-50 blur-3xl opacity-60" />
+          <div className="relative z-10">
+            <p className="mb-2 text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
+              <Wand2 className="h-4 w-4" /> Catalogue des tâches
+            </p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 md:text-5xl">Ajouter une tâche</h1>
+            <p className="mt-2 text-zinc-500 font-medium">Tâches récurrentes du foyer et calendriers de collecte.</p>
+          </div>
+        </div>
+
+        {/* ===== TOP SECTION: Trash Collection (separate) ===== */}
+        <div className="mb-8 rounded-[2rem] glass-card overflow-hidden fade-in-up stagger-2">
+          {/* Accent bar */}
+          <div className="h-1.5 bg-gradient-to-r from-zinc-500 to-zinc-700" />
+          
+          <div className="p-6 md:p-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 shrink-0">
+                <Trash className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900">Passage des poubelles</h2>
+                <p className="text-sm text-zinc-500 font-medium">Calendrier de collecte — événement indépendant de la tâche "Sortir les poubelles".</p>
+              </div>
+            </div>
+
+            <div className="grid gap-8 md:grid-cols-2">
+              {/* Add schedule form */}
+              <form action={async (formData) => { "use server"; await createTrashSchedule(formData) }} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-600">Type de bac</label>
+                  <select
+                    name="color"
+                    className="flex h-12 w-full rounded-xl border border-zinc-200/80 bg-white px-4 text-sm text-zinc-700 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-100 shadow-sm"
+                  >
+                    {TRASH_COLORS.map(c => (
+                      <option key={c.key} value={c.key}>{c.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-600">Nom personnalisé <span className="font-normal text-zinc-400">(optionnel)</span></label>
+                  <input
+                    name="label"
+                    required
+                    placeholder="Ex: Recyclage, Ordures..."
+                    className="flex h-12 w-full rounded-xl border border-zinc-200/80 bg-white px-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-100 shadow-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-zinc-600">Jour de passage</label>
+                    <select
+                      name="day_of_week"
+                      className="flex h-12 w-full rounded-xl border border-zinc-200/80 bg-white px-4 text-sm text-zinc-700 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-100 shadow-sm"
+                    >
+                      {DAYS_FR.map((d, i) => (
+                        <option key={i} value={i}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-zinc-600">Fréquence</label>
+                    <select
+                      name="frequency_weeks"
+                      className="flex h-12 w-full rounded-xl border border-zinc-200/80 bg-white px-4 text-sm text-zinc-700 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-100 shadow-sm"
+                    >
+                      <option value="1">Chaque semaine</option>
+                      <option value="2">Toutes les 2 semaines</option>
+                      <option value="3">Toutes les 3 semaines</option>
+                      <option value="4">Toutes les 4 semaines</option>
+                    </select>
+                  </div>
+                </div>
+                <button className="flex w-full items-center justify-center rounded-xl bg-zinc-800 px-4 py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-zinc-700 active:scale-95">
+                  <CalendarClock className="mr-2 h-4 w-4" /> Enregistrer le passage
+                </button>
+              </form>
+
+              {/* Existing schedules */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-3">Calendriers configurés</p>
+                {schedules.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 p-8 text-center">
+                    <Trash2 className="h-8 w-8 text-zinc-200 mb-2" />
+                    <p className="text-sm text-zinc-400 font-medium">Aucun calendrier configuré.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {schedules.map((s: any) => {
+                      const col = TRASH_COLORS.find(c => c.key === s.color) || TRASH_COLORS[0]
+                      return (
+                        <div key={s.id} className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-100 bg-white/70 px-4 py-3 group">
+                          <div className="flex items-center gap-3">
+                            <span className={`h-3 w-3 rounded-full shrink-0 ${col.dot}`} />
+                            <div>
+                              <div className="font-bold text-sm text-zinc-800">{s.label}</div>
+                              <div className="text-xs text-zinc-400 font-medium">
+                                {DAYS_FR[s.day_of_week]} · {s.frequency_weeks === 1 ? 'chaque semaine' : `toutes les ${s.frequency_weeks} semaines`}
+                              </div>
+                            </div>
+                          </div>
+                          <form action={async () => { "use server"; await deleteTrashSchedule(s.id) }}>
+                            <button className="text-zinc-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 rounded-lg hover:bg-red-50">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </form>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
+        {/* ===== BOTTOM SECTION: Regular Chores ===== */}
         <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
           
           {/* Custom Chore Form */}
-          <div className="rounded-[2rem] glass-card p-6 md:p-8 fade-in-up stagger-2 lg:sticky lg:top-24">
+          <div className="rounded-[2rem] glass-card p-6 md:p-8 fade-in-up stagger-3 lg:sticky lg:top-24">
             <div className="flex items-center gap-4 border-b border-zinc-100 pb-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                 <Plus className="h-6 w-6" />
@@ -67,7 +196,7 @@ export default async function AddChorePage() {
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-semibold text-zinc-700">Description détaillée <span className="font-normal text-zinc-400">(optionnel)</span></label>
+                <label htmlFor="description" className="text-sm font-semibold text-zinc-700">Description <span className="font-normal text-zinc-400">(optionnel)</span></label>
                 <input
                   id="description"
                   name="description"
@@ -91,7 +220,7 @@ export default async function AddChorePage() {
                     <span className="absolute right-4 text-sm font-medium text-zinc-400 pointer-events-none">Jours</span>
                   </div>
                   <div className="flex-1 text-sm text-zinc-500 leading-tight">
-                    Cette tâche reviendra <br className="hidden sm:block"/>à faire après ce délai.
+                    Cette tâche reviendra <br className="hidden sm:block" />à faire après ce délai.
                   </div>
                 </div>
               </div>
@@ -102,7 +231,7 @@ export default async function AddChorePage() {
           </div>
 
           {/* Quick Suggestions */}
-          <div className="rounded-[2rem] glass-card p-6 md:p-8 overflow-hidden fade-in-up stagger-3">
+          <div className="rounded-[2rem] glass-card p-6 md:p-8 overflow-hidden fade-in-up stagger-4">
             <div className="flex items-center gap-4 border-b border-zinc-100 pb-6 mb-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                 <Sparkles className="h-6 w-6" />
@@ -115,13 +244,17 @@ export default async function AddChorePage() {
 
             <div className="grid gap-3">
               {PREDEFINED_CHORES.map((chore, idx) => (
-                <div key={idx} className="group flex items-center justify-between rounded-2xl border border-zinc-100 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 bg-white/50 shadow-sm">
+                <div key={idx} className={`group flex items-center justify-between rounded-2xl border p-4 transition-all bg-white/50 shadow-sm ${
+                  chore.title === 'Sortir les poubelles'
+                    ? 'border-zinc-300/80 hover:border-zinc-400 hover:bg-zinc-50/80'
+                    : 'border-zinc-100 hover:border-indigo-200 hover:bg-indigo-50/50'
+                }`}>
                   <div className="flex items-center gap-4">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-2xl shadow-sm transition-transform group-hover:scale-110">
                       {chore.icon}
                     </span>
                     <div>
-                      <div className="font-bold text-zinc-900 leading-tight" title={chore.title}>{chore.title}</div>
+                      <div className="font-bold text-zinc-900 leading-tight">{chore.title}</div>
                       <div className="text-xs font-medium text-zinc-500 uppercase tracking-wider mt-1 border border-zinc-200 rounded-md inline-block px-1.5 py-0.5">Tous les {chore.frequency_days}j</div>
                     </div>
                   </div>
@@ -133,7 +266,11 @@ export default async function AddChorePage() {
                     formData.append('frequency_days', chore.frequency_days.toString());
                     await createChore(formData);
                   }}>
-                    <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 shadow-sm transition-colors hover:bg-indigo-600 hover:text-white active:scale-90" title="Ajouter cette tâche">
+                    <button className={`flex h-10 w-10 items-center justify-center rounded-xl shadow-sm transition-colors hover:text-white active:scale-90 ${
+                      chore.title === 'Sortir les poubelles'
+                        ? 'bg-zinc-100 text-zinc-600 hover:bg-zinc-700'
+                        : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600'
+                    }`} title="Ajouter cette tâche">
                       <Plus className="h-5 w-5" />
                     </button>
                   </form>
