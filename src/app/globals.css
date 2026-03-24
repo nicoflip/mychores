@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .glass-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 100%);
+    backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 
+      0 8px 32px -4px rgba(0, 0, 0, 0.04),
+      0 4px 12px -2px rgba(0, 0, 0, 0.02),
+      inset 0 1px 0 0 rgba(255, 255, 255, 1);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-card:hover {
+    background: linear-gradient(145deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.85) 100%);
+    box-shadow: 
+      0 20px 48px -8px rgba(0, 0, 0, 0.08),
+      0 8px 24px -4px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 0 rgba(255, 255, 255, 1);
+    transform: translateY(-3px) scale(1.005);
+  }
+  
+  .glass-panel {
+    background: linear-gradient(to bottom right, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+    backdrop-filter: blur(64px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Premium Buttons */
+  .btn-premium {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    position: relative;
+    overflow: hidden;
+    color: white;
+    box-shadow: 
+      0 0 0 1px rgba(37, 99, 235, 0.2),
+      0 8px 20px -4px rgba(37, 99, 235, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-premium::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: skewX(-25deg);
+    transition: left 0.7s ease;
+  }
+  .btn-premium:hover::after {
+    left: 200%;
+  }
+  .btn-premium:hover {
+    box-shadow: 
+      0 0 0 1px rgba(37, 99, 235, 0.2),
+      0 14px 28px -4px rgba(37, 99, 235, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px) scale(1.02);
+  }
+  .btn-premium:active {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  .text-gradient {
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(to right bottom, rgb(24 24 27), rgb(63 63 70), rgb(161 161 170));
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@layer components {
+  /* Fluid Entry Animations */
+  .fade-in-up {
+    animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  
+  .stagger-1 { animation-delay: 150ms; }
+  .stagger-2 { animation-delay: 300ms; }
+  .stagger-3 { animation-delay: 450ms; }
+  .stagger-4 { animation-delay: 600ms; }
+  .stagger-5 { animation-delay: 750ms; }
+  .stagger-6 { animation-delay: 900ms; }
+  
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Floating Background animation - Slower and smoother */
+  .animate-blob {
+    animation: blob 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .animation-delay-2000 { animation-delay: -5s; }
+  .animation-delay-4000 { animation-delay: -10s; }
+  
+  @keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+    33% { transform: translate(50px, -70px) scale(1.15) rotate(15deg); }
+    66% { transform: translate(-40px, 40px) scale(0.85) rotate(-10deg); }
+    100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  }
+  
+  /* Noise Texture */
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    mix-blend-mode: multiply;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: transparent;
+}
