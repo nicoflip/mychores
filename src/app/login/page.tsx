@@ -11,7 +11,7 @@ export default async function LoginPage({
   const isSignup = resolveSearchParams.view === 'signup'
   
   return (
-    <div className="relative flex min-h-screen w-full overflow-hidden bg-zinc-950 font-sans">
+    <div className="relative flex min-h-[100dvh] w-full overflow-hidden bg-slate-50 font-sans">
       {/* Decorative gradient background elements */}
       <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] rounded-full bg-blue-600/30 blur-[120px]" />
       <div className="absolute -bottom-[10%] -right-[10%] h-[50%] w-[50%] rounded-full bg-indigo-600/30 blur-[120px]" />
@@ -19,25 +19,27 @@ export default async function LoginPage({
       <div className="relative flex w-full flex-col shadow-2xl lg:flex-row">
         
         {/* Left column - Branding & Value Prop */}
-        <div className="hidden flex-col justify-between border-r border-white/5 bg-zinc-900/40 p-16 backdrop-blur-3xl lg:flex lg:w-1/2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
-              <CheckCircle2 className="h-6 w-6 text-white" />
+        <div className="hidden flex-col justify-between border-r border-zinc-200/50 bg-white/40 p-16 backdrop-blur-3xl lg:flex lg:w-1/2">
+          <div className="flex flex-col gap-6 fade-in-up">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+                <CheckCircle2 className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-xl font-bold tracking-tight text-zinc-900">ChoresSync</span>
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">ChoresSync</span>
+
+            <div className="max-w-md mt-10">
+              <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 sm:text-5xl">
+                Votre foyer, <br/>
+                <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-sm">parfaitement synchronisé.</span>
+              </h1>
+              <p className="mt-6 text-lg leading-relaxed text-zinc-600 font-medium">
+                Gérez les requêtes du foyer sans friction. Suivez qui a fait quoi, organisez vos récurrences et ne laissez plus jamais la charge s'accumuler.
+              </p>
+            </div>
           </div>
 
-          <div className="max-w-md">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-              Votre foyer, <br/>
-              <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">parfaitement synchronisé.</span>
-            </h1>
-            <p className="mt-6 text-lg leading-relaxed text-zinc-400">
-              Gérez les requêtes du foyer sans friction. Suivez qui a fait quoi, organisez vos récurrences et ne laissez plus jamais la charge s'accumuler.
-            </p>
-          </div>
-
-          <div className="text-sm font-medium text-zinc-500">
+          <div className="text-sm font-bold text-zinc-400">
             © 2026 ChoresSync. Tous droits réservés.
           </div>
         </div>
@@ -47,11 +49,11 @@ export default async function LoginPage({
       {/* Login Card */}
       <div className="w-full max-w-md rounded-[2.5rem] glass-card p-8 sm:p-12 relative z-10 mx-4 fade-in-up stagger-1">
             {/* Header */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold tracking-tight text-white transition-colors group-hover:text-blue-400">
+            <div className="mb-8 border-b border-zinc-100 pb-6">
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
                 {isSignup ? "Créer un compte" : "Bon retour"}
               </h2>
-              <p className="mt-2 text-sm text-zinc-400">
+              <p className="mt-2 text-sm font-medium text-zinc-500">
                 {isSignup ? "Rejoignez ChoresSync en quelques secondes." : "Saisissez vos identifiants pour accéder à votre espace."}
               </p>
             </div>
@@ -64,39 +66,39 @@ export default async function LoginPage({
 
             <form className="space-y-5">
               {isSignup && (
-                <div className="space-y-1.5 transition-colors focus-within:text-blue-400">
-                  <label htmlFor="name" className="text-sm font-medium text-zinc-300">Votre nom</label>
+                <div className="space-y-1.5">
+                  <label htmlFor="name" className="text-sm font-bold text-zinc-700">Votre nom</label>
                   <input
                     id="name"
                     name="name"
                     type="text"
                     required={isSignup}
-                    className="flex h-12 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white placeholder:text-zinc-600 transition-all focus:border-blue-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="flex h-12 w-full rounded-xl border border-zinc-200/80 bg-white px-4 py-2 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-sm"
                     placeholder="Ex: Alex"
                   />
                 </div>
               )}
               
-              <div className="space-y-1.5 transition-colors focus-within:text-blue-400">
-                <label htmlFor="email" className="text-sm font-medium text-zinc-300">Adresse email</label>
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="text-sm font-bold text-zinc-700">Adresse email</label>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   required
-                  className="flex h-12 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white placeholder:text-zinc-600 transition-all focus:border-blue-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="flex h-12 w-full rounded-xl border border-zinc-200/80 bg-white px-4 py-2 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-sm"
                   placeholder="votre@email.com"
                 />
               </div>
               
-              <div className="space-y-1.5 transition-colors focus-within:text-blue-400">
-                <label htmlFor="password" className="text-sm font-medium text-zinc-300">Mot de passe</label>
+              <div className="space-y-1.5">
+                <label htmlFor="password" className="text-sm font-bold text-zinc-700">Mot de passe</label>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   required
-                  className="flex h-12 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white placeholder:text-zinc-600 transition-all focus:border-blue-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="flex h-12 w-full rounded-xl border border-zinc-200/80 bg-white px-4 py-2 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-sm"
                   placeholder="••••••••"
                 />
               </div>
@@ -113,10 +115,10 @@ export default async function LoginPage({
                 
                 <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10"></div>
+                    <div className="w-full border-t border-zinc-200"></div>
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="bg-zinc-900 px-2 text-zinc-500">
+                    <span className="bg-white/90 px-4 font-bold rounded-full text-zinc-500 border border-zinc-100">
                       {isSignup ? "Déjà un compte ?" : "Nouveau ici ?"}
                     </span>
                   </div>
@@ -124,7 +126,7 @@ export default async function LoginPage({
 
                 <Link
                   href={isSignup ? "/login?view=login" : "/login?view=signup"}
-                  className="flex h-12 items-center justify-center rounded-xl border border-white/10 bg-transparent text-sm font-semibold text-white transition-all hover:bg-white/5 focus:outline-none"
+                  className="flex h-12 items-center justify-center rounded-xl border border-zinc-200/80 bg-white text-sm font-bold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 focus:outline-none active:scale-[0.98]"
                 >
                   {isSignup ? "Me connecter" : "Créer un compte"}
                 </Link>
